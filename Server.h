@@ -128,7 +128,7 @@ inline void StartListen(Server& ser)
 		{
 			this_thread::sleep_for(100ms);
 			cout << "连接失败" << endl;
-			continue;
+			continue;//
 		}
 		else// 连接成功
 		{
