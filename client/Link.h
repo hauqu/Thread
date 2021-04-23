@@ -1,4 +1,9 @@
 #pragma once
+/*
+
+不负责收发数据，只负责提供数据存储和设置标志位
+
+*/
 #include<string>
 #include <winsock2.h>//windows 下的socket2.2
 #pragma comment(lib,"ws2_32.lib")  //使用socket必须加载库

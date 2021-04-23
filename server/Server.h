@@ -1,6 +1,8 @@
 #pragma once
 /*
-用来与玩家进行连接，只有处于连接中的玩家可以加入房间并开始游戏
+
+thread listenServer 用于 循环监听建立连接
+通过 Link 通信，由线程LinkServer 启动 communicate 将数据存储到 Link 对象中
 
 */
 #define _WINSOCK_DEPRECATED_NO_WARNINGS //头文件升级原因导致原有函数报错，加上这句忽略报错
