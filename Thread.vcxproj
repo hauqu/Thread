@@ -124,6 +124,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Link.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>

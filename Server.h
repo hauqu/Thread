@@ -5,41 +5,21 @@
 */
 #define _WINSOCK_DEPRECATED_NO_WARNINGS //头文件升级原因导致原有函数报错，加上这句忽略报错
 #include <stdio.h>
-#include <winsock2.h>//windows 下的socket2.2
+
 #include<iostream>
 #include<thread>
 #include<vector>
 #include<string>
+#include"Link.h"
 #pragma comment(lib,"ws2_32.lib")  //使用socket必须加载库
 using namespace std;
 
 
-class Link
-{
-public:
-	string r;//接受的数据
-	string s;//发送的数据
-	SOCKET sClient;
-	thread client;
-	char revData[255];
-	const char *sendData;
-	
-public:
-	Link(SOCKET c);
-	void startLink();
-	
-};
-void creatLink(SOCKET& s, vector<Link>&players);
+
+
 void communicate(Link& l);
-Link::Link(SOCKET c)
-{
-	sClient = c;
-	
-}
-inline void Link::startLink()
-{
-	client = thread(communicate, std::ref(*this));
-}
+
+
 
 class Server 
 {
@@ -50,11 +30,15 @@ public:
 public:
 	~Server();
 public:
+	static const int MAX_LINK=4;
+public:
 	WORD sockVersion;
 	WSADATA wsaData;
 	SOCKET slisten;
-	thread server;
-	
+public:
+	thread listenServer;
+	thread linkServer[MAX_LINK];
+
 };
 
 void StartListen(Server& ser);
@@ -96,7 +80,7 @@ inline Server::Server()
 	{
 		cout << "服务端套接字绑定成功 "<< endl;
 	}
-	server = thread(StartListen, std::ref(*this));
+	listenServer = thread(StartListen, std::ref(*this));
 }
 inline Server::~Server()
 {
@@ -106,7 +90,7 @@ inline Server::~Server()
 }
 inline void StartListen(Server& ser)
 {
-	if (listen(ser.slisten, SOMAXCONN) == SOCKET_ERROR)//SOMAXCONN 队列等待处理最大连接个数
+	if (listen(ser.slisten, SOMAXCONN) == ser.MAX_LINK)//等待处理最大连接个数
 	{
 		cout << "无法继续监听" << endl;
 	}
@@ -121,6 +105,7 @@ inline void StartListen(Server& ser)
 		sockaddr_in remoteAddr;
 		int nAddrlen = sizeof(remoteAddr);
 		cout << "<正在监听>" << endl;
+		cout << "现在有 " << ser.players.size() << " 个连接" << endl;
 		sClient = accept(ser.slisten, (SOCKADDR*)&remoteAddr, &nAddrlen);
 		
 		cout << "开始连接" << endl;
@@ -132,35 +117,44 @@ inline void StartListen(Server& ser)
 		}
 		else// 连接成功
 		{
+			int i = ser.players.size();
 			printf("接受到一个连接：%s \r\n", inet_ntoa(remoteAddr.sin_addr));
 			cout << "连接成功" << endl;
-			send(sClient, "这里是服务器\n",15,0);
-			ser.players.push_back(&Link(sClient));
+			
+			Link* temp = new Link(sClient, inet_ntoa(remoteAddr.sin_addr));
+			ser.players.push_back(temp);
+			ser.linkServer[i] = thread(communicate, std::ref(*ser.players[i]));
+			
 		}
 		this_thread::sleep_for(100ms);
 	}
 }
-
-void communicate(Link&l)
+void communicate(Link& l)
 {
-	int rec = 0;
 	while (true)
 	{
-		rec = recv(l.sClient, l.revData, 255, 0);
-		if (rec>0)//接收到数据
+		if (!l.ableR && !l.ableS)
 		{
-			l.revData[rec] = '\0';
-			l.r = l.revData;
-			cout << "接受数据：" << l.r << endl;
-			rec = 0;
+			this_thread::sleep_for(0.5s);
 		}
-		if (!l.s.empty())
+		if (l.ableS)
 		{
 			l.sendData = l.s.c_str();
 			send(l.sClient, l.sendData, strlen(l.sendData), 0);
-			l.s = "";
 		}
-		this_thread::sleep_for(50ms);
+		if (l.ableR)
+		{
+			int rec = 0;
+			rec = recv(l.sClient, l.revData, 255, 0);
+			if (rec > 0)//接收到数据
+			{
+				l.revData[rec] = '\0';
+				l.r = l.revData;
+				rec = 0;
+			}
+		}
+
 		
+
 	}
 }
