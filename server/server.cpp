@@ -2,27 +2,31 @@
 using namespace std;
 int main()
 {
-	Server* test =new Server();
+	Server* test =new Server(12345);
 	string temp="";
 	int i = 0;
 	while (true)
 	{
+		
 		if (!test->players.empty())
 		{
-			
-			test->players[0]->recvR();
-			
-			if (!test->players[0]->r.empty())
+			for (int i = 0; i < test->players.size(); i++)
 			{
-				if (temp != test->players[0]->r)
+
+
+				test->players[i]->recvR();
+
+				if (!test->players[i]->r.empty())
 				{
-					cout << "接收到：" <<test->players[0]->name<<": "<<endl
-						<< test->players[0]->r << endl;
-					temp = test->players[0]->r;
+					if (temp != test->players[i]->r)
+					{
+						cout << "接收到：" << test->players[i]->name << ": " << endl
+							<< test->players[i]->r << endl;
+						temp = test->players[i]->r;
+					}
 				}
+				
 			}
-			//test->players[0]->sendS(to_string(i++) + " :呼叫客户端1");
-			
 		}
 		
 		

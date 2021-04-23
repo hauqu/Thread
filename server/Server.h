@@ -24,7 +24,7 @@ void communicate(Link& l);
 class Server 
 {
 public:
-	Server();
+	Server(u_short port);
 	
 	vector<Link*>players;//连接的玩家们
 public:
@@ -42,7 +42,7 @@ public:
 };
 
 void StartListen(Server& ser);
-inline Server::Server()
+inline Server::Server(u_short port)
 {
 	//初始化WSA  
 	//启动一个2.2网络协议
@@ -70,7 +70,7 @@ inline Server::Server()
 	//绑定IP和端口  
 	sockaddr_in sin;
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(12345);
+	sin.sin_port = htons(port);
 	sin.sin_addr.S_un.S_addr = INADDR_ANY;
 	if (bind(slisten, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
